@@ -2,10 +2,12 @@ const fs = require('fs');
 
 function Config () {
     // Create a default config file it if doesn't exist yet.
-    fs.writeFileSync('config.json', `{"prevCheck": ${Date.now()}}`, {
-        encoding: 'utf8',
-        flag: 'wx',
-    })
+    try {
+        fs.writeFileSync('config.json', `{"prevCheck": ${Date.now()}}`, {
+            encoding: 'utf8',
+            flag: 'wx',
+        })
+    } catch {}
 
 
     this._config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
