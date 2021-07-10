@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 
+// Checks a string loosely follows JWT format.
 function validateJwt(jwt) {
     try {
         
@@ -17,6 +18,7 @@ function validateJwt(jwt) {
     }
 }
 
+// Checks if a JWT has expired yet. True if valid, false if expired
 function validateToken(token) {
     if (typeof token !== 'string' || token === '' || !validateJwt(token)) return false;
     
@@ -28,6 +30,7 @@ function validateToken(token) {
     return true;
 }
 
+// Uses valid refresh token to regenerate session token.
 async function refreshTokens(refreshToken, ratelimit = null, verbose = false) {
     if (ratelimit) await ratelimit.wait();
 
@@ -62,6 +65,7 @@ async function refreshTokens(refreshToken, ratelimit = null, verbose = false) {
     }
 }
 
+// Uses username and password to create fresh refresh and session tokens
 async function generateTokens(username, password, ratelimit = null, verbose = false) {
     if (ratelimit) await ratelimit.wait();
 

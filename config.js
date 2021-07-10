@@ -5,6 +5,9 @@ function Config () {
 };
 
 Config.prototype.get = function (key) {
+    if (key == "username") return process.env.MANGADEX_USERNAME;
+    if (key == "password") return process.env.MANGADEX_PASSWORD;
+    if (key == "webhookUrl") return process.env.MANGADEX_WEBHOOK_URL;
     return this._config[key];
 }
 

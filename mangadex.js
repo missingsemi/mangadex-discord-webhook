@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const log = require('./log');
 
+// chapter object to make my life a little bit easier.
 function Chapter (apiResponse) {
     this.chapterId = apiResponse['data']['id'];
     this.volume = apiResponse['data']['attributes']['volume'];
@@ -12,9 +13,11 @@ function Chapter (apiResponse) {
     this.coverFilename = null;
 }
 
+// Groups chapters together to only fetch manga info once per manga instead of once per chapter.
 async function groupFetches(chapters, ratelimit = null) {
     let mangaInfo = new Map();
 
+    // function to actually grab the info pog
     let getInfo = async function (uuid) {
         if (ratelimit) await ratelimit.wait();
         let response = await fetch(`https://api.mangadex.org/manga/${uuid}?includes[]=cover_art`);
@@ -42,6 +45,7 @@ async function groupFetches(chapters, ratelimit = null) {
         };
     } 
 
+    // go through each chapter. if the manga info is in the map, use it. otherwise, fetch it.
     for (let i = 0; i < chapters.length; i++) {
         if (mangaInfo.has(chapters[i]['mangaId'])) {
             let info = mangaInfo.get(chapters[i]['mangaId']);
@@ -59,10 +63,12 @@ async function groupFetches(chapters, ratelimit = null) {
     return chapters;
 }
 
+// gets a list of completed chapters objects from the following feed.
 async function getFollowingFeed(sessionToken, lastCheck, ratelimit = null) {
     let offset = 0;
     let chapters = [];
 
+    // loops until end of feed is hit in case theres more than 500 manga.
     while (true) {
         let url =   `https://api.mangadex.org/user/follows/manga/feed` + 
                 `?limit=500` + 
@@ -91,9 +97,17 @@ async function getFollowingFeed(sessionToken, lastCheck, ratelimit = null) {
         }
     }
 
+    // turns each api chapter into a chapter object.
     chapters = chapters.map(c => new Chapter(c));
+
+    // this wont do much later, but publishAtSince is broken so I have to manually sort for now.
     chapters = chapters.filter(c => c['timestamp'] >= lastCheck);
+
+    // fills in mangaTitle and coverUrl
     chapters = await groupFetches(chapters, ratelimit);
+
+    // Time stop brave is in my follows list, but not in the api so it breaks things without a null check.
+    // Hopefully devs fix that lol
     chapters = chapters.filter(c => c['mangaTitle'] != null);
     return chapters;
 }
