@@ -64,7 +64,7 @@ async function groupFetches(chapters, ratelimit = null) {
 }
 
 // gets a list of completed chapters objects from the following feed.
-async function getFollowingFeed(sessionToken, lastCheck, ratelimit = null) {
+async function getFollowingFeed(sessionToken, prevCheck, ratelimit = null) {
     let offset = 0;
     let chapters = [];
 
@@ -74,7 +74,7 @@ async function getFollowingFeed(sessionToken, lastCheck, ratelimit = null) {
                 `?limit=500` + 
                 `&translatedLanguage[]=en` + 
                 `&order[publishAt]=asc` + 
-                `&publishAtSince=${lastCheck.toISOString().slice(0,-5)}` + 
+                `&publishAtSince=${prevCheck.toISOString().slice(0,-5)}` + 
                 `&offset=${offset}`;
 
         let options = {
@@ -89,7 +89,12 @@ async function getFollowingFeed(sessionToken, lastCheck, ratelimit = null) {
         let response = await fetch(url, options);
         let content = await response.json();
 
-        chapters = chapters.concat(content['results']);
+        // If the last chapter in a response isnt new, then all the ones above it are also old.
+        // That means we can skip out on filtering and modifying them later which should speed up code significantly.
+        let test_chapter = new Chapter(content['results'][content['results'].length - 1]);
+        if (test_chapter['timestamp'] >= prevCheck) chapters = chapters.concat(content['results']);
+
+
         if (content['total'] > content['offset'] + content['limit']) {
             offset += content['limit'];
         } else {
@@ -101,7 +106,7 @@ async function getFollowingFeed(sessionToken, lastCheck, ratelimit = null) {
     chapters = chapters.map(c => new Chapter(c));
 
     // this wont do much later, but publishAtSince is broken so I have to manually sort for now.
-    chapters = chapters.filter(c => c['timestamp'] >= lastCheck);
+    chapters = chapters.filter(c => c['timestamp'] >= prevCheck);
 
     // fills in mangaTitle and coverUrl
     chapters = await groupFetches(chapters, ratelimit);
