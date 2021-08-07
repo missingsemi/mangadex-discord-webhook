@@ -89,6 +89,9 @@ async function getFollowingFeed(sessionToken, prevCheck, ratelimit = null) {
         let response = await fetch(url, options);
         let content = await response.json();
 
+        // Break because theres no manga (actually matters now that publishAtSince works)
+        if (content['total'] == 0) break;
+
         // If the last chapter in a response isnt new, then all the ones above it are also old.
         // That means we can skip out on filtering and modifying them later which should speed up code significantly.
         let test_chapter = new Chapter(content['results'][content['results'].length - 1]);
