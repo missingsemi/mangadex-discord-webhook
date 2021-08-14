@@ -1,5 +1,6 @@
 const Ratelimit = require('ratelimit');
 const { validateToken, refreshTokens, generateTokens } = require('./auth.js');
+require('dotenv').config();
 const config = require('./config.js');
 const { getFollowingFeed } = require('./mangadex.js');
 const { sendWebhooks } = require('./discord.js');

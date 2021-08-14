@@ -74,7 +74,7 @@ async function getFollowingFeed(sessionToken, prevCheck, ratelimit = null) {
                 `?limit=500` + 
                 `&translatedLanguage[]=en` + 
                 `&order[publishAt]=asc` + 
-                `&publishAtSince=${prevCheck.toISOString().slice(0,-5)}` + 
+                //`&publishAtSince=${prevCheck.toISOString().slice(0,-5)}` + 
                 `&offset=${offset}`;
 
         let options = {
