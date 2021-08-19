@@ -89,7 +89,7 @@ async function getFollowingFeed(sessionToken, prevCheck, ratelimit = null) {
         let response = await fetch(url, options);
         let content = await response.json();
 
-        // Break because theres no manga (actually matters now that publishAtSince works)
+        // Break when theres no manga
         if (content['total'] == 0) break;
 
         // If the last chapter in a response isnt new, then all the ones above it are also old.
@@ -114,8 +114,7 @@ async function getFollowingFeed(sessionToken, prevCheck, ratelimit = null) {
     // fills in mangaTitle and coverUrl
     chapters = await groupFetches(chapters, ratelimit);
 
-    // Time stop brave is in my follows list, but not in the api so it breaks things without a null check.
-    // Hopefully devs fix that lol
+    // Not likely anymore, but null check in case a manga is messed up.
     chapters = chapters.filter(c => c['mangaTitle'] != null);
     return chapters;
 }

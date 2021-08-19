@@ -37,18 +37,29 @@ async function authenticate() {
 
 // Checks for new chapters and sends webhooks if they exist.
 async function update() {
-    await log({
-        severity: "INFO",
-        uuid: "UPDATE",
-        message: "Checking for updated manga",
-        timestamp: new Date(Date.now()),
-        nolog: true
-    })
+    try {
+        await log({
+            severity: "INFO",
+            uuid: "UPDATE",
+            message: "Checking for updated manga",
+            timestamp: new Date(Date.now()),
+            nolog: true
+        })
 
-    await authenticate();
-    let chs = await getFollowingFeed(config.get('sessionToken'), new Date(config.get('prevCheck')), md_ratelimit);
-    config.set('prevCheck', Date.now());
-    await sendWebhooks(chs, config.get('webhookUrl'), discord_ratelimit);
+        await authenticate();
+        let chs = await getFollowingFeed(config.get('sessionToken'), new Date(config.get('prevCheck')), md_ratelimit);
+        
+        config.set('prevCheck', Date.now());
+        await sendWebhooks(chs, config.get('webhookUrl'), discord_ratelimit);
+    } catch (e) {
+        await log({
+            severity: "WARN",
+            uuid: "UPDATE",
+            message: "Failed to update manga",
+            timestamp: new Date(Date.now()),
+            nolog: true
+        })
+    }
 }
 
 // doesnt really have to be async but I like the simplicity of passing errors to console.error like this, so I'm keeping it.

@@ -88,16 +88,30 @@ async function generateTokens(username, password, ratelimit = null, verbose = fa
 
 
     let content = await response.json()
-        .catch(_ => {
-            console.error('Caught by WAF.');
+        .catch(async (e) => {
+            await log({
+                severity: "ERROR",
+                uuid: "generateTokens",
+                message: "Caught by WAF.",
+                timestamp: new Date(Date.now()),
+                nolog: false
+            })
         });
 
-    if (response.ok) {
+    if (response.ok && content) {
         return content['token'];
     } else {
-        if (verbose) console.error(`[${Date.now()}] Code: ${response.status}\n${JSON.stringify(content['errors'], null, 2)}`);
+        if (verbose) {
+            await log({
+                severity: "ERROR",
+                uuid: "generateTokens",
+                message: "Failed to generate tokens.",
+                timestamp: new Date(Date.now()),
+                nolog: false
+            })
+        }
+        // Error in addition to logging, because tokens are required.
         throw(new Error('Failed to generate tokens'));
-        return null;
     }
 }
 
