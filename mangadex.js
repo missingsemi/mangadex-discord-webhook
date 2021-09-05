@@ -8,7 +8,7 @@ function Chapter (apiResponse) {
     this.chapter = apiResponse['data']['attributes']['chapter'];
     this.chapterTitle = apiResponse['data']['attributes']['title'];
     this.timestamp = new Date(apiResponse['data']['attributes']['publishAt']);
-    this.mangaId = apiResponse['relationships'].filter(v => v['type'] == 'manga')[0]['id'];
+    this.mangaId = apiResponse['data']['relationships'].find(v => v['type'] == 'manga')['id'];
     this.mangaTitle = null;
     this.coverFilename = null;
 }
@@ -37,7 +37,7 @@ async function groupFetches(chapters, ratelimit = null) {
         }
 
         let title = content['data']['attributes']['title'][Object.keys(content['data']['attributes']['title'])[0]]
-        let filename = content['relationships'].filter(v => v['type'] == 'cover_art')[0]['attributes']['fileName'];
+        let filename = content['data']['relationships'].find(v => v['type'] == 'cover_art')['attributes']['fileName'];
 
         return {
             mangaTitle: title,
@@ -70,11 +70,11 @@ async function getFollowingFeed(sessionToken, prevCheck, ratelimit = null) {
 
     // loops until end of feed is hit in case theres more than 500 manga.
     while (true) {
-        let url =   `https://api.mangadex.org/user/follows/manga/feed` + 
+        let url = `https://api.mangadex.org/user/follows/manga/feed` + 
                 `?limit=500` + 
                 `&translatedLanguage[]=en` + 
                 `&order[publishAt]=asc` + 
-                //`&publishAtSince=${prevCheck.toISOString().slice(0,-5)}` + 
+                `&publishAtSince=${prevCheck.toISOString().slice(0,-5)}` + 
                 `&offset=${offset}`;
 
         let options = {
