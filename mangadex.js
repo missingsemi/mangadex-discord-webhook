@@ -3,12 +3,12 @@ const log = require('./log');
 
 // chapter object to make my life a little bit easier.
 function Chapter (apiResponse) {
-    this.chapterId = apiResponse['data']['id'];
-    this.volume = apiResponse['data']['attributes']['volume'];
-    this.chapter = apiResponse['data']['attributes']['chapter'];
-    this.chapterTitle = apiResponse['data']['attributes']['title'];
-    this.timestamp = new Date(apiResponse['data']['attributes']['publishAt']);
-    this.mangaId = apiResponse['data']['relationships'].find(v => v['type'] == 'manga')['id'];
+    this.chapterId = apiResponse['id'];
+    this.volume = apiResponse['attributes']['volume'];
+    this.chapter = apiResponse['attributes']['chapter'];
+    this.chapterTitle = apiResponse['attributes']['title'];
+    this.timestamp = new Date(apiResponse['attributes']['publishAt']);
+    this.mangaId = apiResponse['relationships'].find(v => v['type'] == 'manga')['id'];
     this.mangaTitle = null;
     this.coverFilename = null;
 }
@@ -94,8 +94,8 @@ async function getFollowingFeed(sessionToken, prevCheck, ratelimit = null) {
 
         // If the last chapter in a response isnt new, then all the ones above it are also old.
         // That means we can skip out on filtering and modifying them later which should speed up code significantly.
-        let test_chapter = new Chapter(content['results'][content['results'].length - 1]);
-        if (test_chapter['timestamp'] >= prevCheck) chapters = chapters.concat(content['results']);
+        let test_chapter = new Chapter(content['data'][content['data'].length - 1]);
+        if (test_chapter['timestamp'] >= prevCheck) chapters = chapters.concat(content['data']);
 
 
         if (content['total'] > content['offset'] + content['limit']) {
